@@ -10,6 +10,13 @@
                     {{ $message }}
                 </div>
             @enderror
+            <label for="type">type:</label>
+            <select name="type_id" id="type" class="mt-4 mb-4">
+                <option value=""></option>
+                @foreach ($types as $type)
+                <option value="{{$type->id}}"@selected(old('type_id')==$type->id)>{{$type->name}}</option>
+                @endforeach
+            </select>
     <div class="mb-3">
         <label for="description" class="form-label">description</label>
         <textarea class="form-control" id="description" rows="3" name="description">{{old('description')}}</textarea>
