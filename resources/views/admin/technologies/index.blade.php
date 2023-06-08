@@ -7,4 +7,5 @@
         <li><a href="{{route('admin.technologies.show',$technology->slug)}}">{{$technology->name}}</a></li>
         @endforeach
     </ul>
+    
 @endsection
