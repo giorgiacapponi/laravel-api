@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
 use App\Models\Type;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProjectController extends Controller
@@ -19,8 +20,8 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects=Project::all();
-        return view('admin.projects.index',compact('projects'));
+        $projects = Project::all();
+        return view('admin.projects.index', compact('projects'));
     }
 
     /**
@@ -30,9 +31,9 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        
-        $types=Type::all();
-        return view('admin.projects.create',compact('types'));
+
+        $types = Type::all();
+        return view('admin.projects.create', compact('types'));
     }
 
     /**
@@ -43,10 +44,15 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request)
     {
-        $data=$request->validated();
-        $project= new Project();
-        $project->slug=Str::slug($data['title']);
-        $project->fill ($data);
+
+        $data = $request->validated();
+        $project = new Project();
+        if ($request->hasFile('image')) {
+            $path = Storage::disk('public')->put('project_images', $request->image);
+            $data['image'] = $path;
+        }
+        $project->slug = Str::slug($data['title']);
+        $project->fill($data);
         $project->save();
         return redirect()->route('admin.projects.index');
     }
@@ -59,7 +65,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $types=Type::all();
+        $types = Type::all();
         return view('admin.projects.show', compact('project'));
     }
 
@@ -71,8 +77,8 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        $types=Type::all();
-        return view('admin.projects.edit',compact('project','types'));
+        $types = Type::all();
+        return view('admin.projects.edit', compact('project', 'types'));
     }
 
     /**
@@ -84,8 +90,15 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
-        $data=$request->validated();
-        $project->slug=Str::slug($data['title']);
+        $data = $request->validated();
+        if($request->hasFile('image')){
+            if($project->image){
+                Storage::delete($project->image);
+            }
+            $path=Storage::disk('public')->put('project_images',$request->image);
+            $data['image']=$path;
+        }
+        $project->slug = Str::slug($data['title']);
         $project->update($data);
         return redirect()->route('admin.projects.index');
     }
@@ -99,7 +112,9 @@ class ProjectController extends Controller
     public function destroy(Project $project)
     {
         $project->delete();
+        if($project->image){
+            Storage::delete($project->image);
+        }
         return redirect()->route('admin.projects.index');
     }
- 
 }
